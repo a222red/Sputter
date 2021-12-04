@@ -42,8 +42,8 @@ macro_rules! gen_builtin {
 fn main() -> Result<(), Box<dyn Error>> {
     let child = thread::Builder::new().stack_size(32 * 1024 * 1024).spawn(|| {
         let mut names = HashMap::<String, Object>::new();
-        let mut call_stack: Vec<CallInfo> = Vec::new();
-        let mut scope_stack: Vec<Vec<String>> = Vec::new();
+        let mut call_stack = Vec::<CallInfo>::new();
+        let mut scope_stack = Vec::<Vec<String>>::new();
 
         gen_builtin!(names,
             (print content)
@@ -52,6 +52,7 @@ fn main() -> Result<(), Box<dyn Error>> {
             (exit code)
             (get ls idx)
             (len ls)
+            (range start end)
         );
 
         let mut args = std::env::args();

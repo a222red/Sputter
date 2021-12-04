@@ -533,6 +533,24 @@ fn parse_call_expr<'a>(buf: &'a mut Buffer, names: &mut HashMap<String, Object>,
                 _ => {error(buf, format!("Expected List, got {:?}", args[0]))?; Object::None}
             }
         },
+        "range" => {
+            let start = match args[0] {
+                Object::Int(i) => i,
+                _ => {error(buf, format!("Expected Int, got {:?}", args[0]))?; 0}
+            };
+            let end = match args[1] {
+                Object::Int(i) => i,
+                _ => {error(buf, format!("Expected Int, got {:?}", args[1]))?; 0}
+            };
+
+            let mut res = Vec::<Object>::new();
+
+            for i in start..end {
+                res.push(Object::Int(i));
+            }
+
+            Object::List(res)
+        },
         _ => {
             call_stack.push(CallInfo {
                 old_addr: buf.index,
