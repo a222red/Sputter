@@ -86,7 +86,7 @@ fn match_expr<'a>(buf: &'a mut Buffer, names: &mut HashMap<String, Object>, call
         Token::Str(s) => Object::Str(s),
         Token::True => Object::Bool(true),
         Token::False => Object::Bool(false),
-        Token::Nop => Object::None,
+        Token::None => Object::None,
         Token::LParen => parse_paren_expr(buf, names, call_stack, scope_stack)?,
         Token::LBracket => parse_list_expr(buf, names, call_stack, scope_stack)?,
         _ => {error(buf, format!("Expected expression, got token {:?}", tok))?; Object::None}
@@ -108,7 +108,7 @@ fn parse_paren_expr<'a>(buf: &'a mut Buffer, names: &mut HashMap<String, Object>
         Token::Str(s) => Object::Str(s),
         Token::True => Object::Bool(true),
         Token::False => Object::Bool(false),
-        Token::Nop => Object::None,
+        Token::None => Object::None,
         Token::Def => parse_def_expr(buf, names)?,
         Token::If => parse_if_expr(buf, names, call_stack, scope_stack)?,
         Token::Lambda => parse_lambda_expr(buf)?,

@@ -2,7 +2,7 @@ use std::error::Error;
 
 #[derive(Debug)]
 pub enum Token {
-    None,
+    Unknown(String),
     LParen,
     RParen,
     LBracket,
@@ -20,14 +20,14 @@ pub enum Token {
     Else,
     True,
     False,
-    Nop,
+    None,
     Use
 }
 
 pub fn get_tok(buf: &mut Buffer) -> Result<Token, Box<dyn Error>> {
     let mut i = buf.index;
     let start: usize;
-    let mut tok = Token::None;
+    let mut tok = Token::Unknown(String::new());
     
     // Ignore leading whitespace
     while i < buf.len {
@@ -134,6 +134,7 @@ pub fn get_tok(buf: &mut Buffer) -> Result<Token, Box<dyn Error>> {
     }
     else {
         i += 1;
+        tok = Token::Unknown(String::from_utf8(buf.bytes[start..i].to_vec())?);
     }
 
     tok = match tok {
@@ -146,7 +147,7 @@ pub fn get_tok(buf: &mut Buffer) -> Result<Token, Box<dyn Error>> {
                 "else" => Token::Else,
                 "true" => Token::True,
                 "false" => Token::False,
-                "none" => Token::Nop,
+                "none" => Token::None,
                 "use" => Token::Use,
                 _ => tok
             }
