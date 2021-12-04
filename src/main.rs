@@ -2,12 +2,15 @@ mod tokenizer;
 mod parser;
 
 use crate::{
-    tokenizer::Buffer,
+    tokenizer::{
+        Buffer,
+        get_tok
+    },
     parser::{
         Object,
         Func,
         CallInfo,
-        parse_expr
+        match_expr
     }
 };
 
@@ -60,7 +63,8 @@ fn main() -> Result<(), Box<dyn Error>> {
             let mut buf = Buffer::new(read(args.nth(1).unwrap().as_str()).unwrap()).unwrap();
 
             while buf.index < buf.len {
-                parse_expr(&mut buf, &mut names, &mut call_stack, &mut scope_stack).unwrap();
+                let tok = get_tok(&mut buf).unwrap();
+                match_expr(&mut buf, &mut names, &mut call_stack, &mut scope_stack, tok).unwrap();
             }
         }
         else if args.len() == 1 {
@@ -75,7 +79,8 @@ fn main() -> Result<(), Box<dyn Error>> {
 
                 let mut res = Object::None;
                 while buf.index < buf.len {
-                    res = parse_expr(&mut buf, &mut names, &mut call_stack, &mut scope_stack).unwrap();
+                    let tok = get_tok(&mut buf).unwrap();
+                    res = match_expr(&mut buf, &mut names, &mut call_stack, &mut scope_stack, tok).unwrap();
                 }
 
                 println!("=> {:?}", res);
