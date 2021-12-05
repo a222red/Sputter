@@ -449,10 +449,9 @@ fn parse_let_expr<'a>(buf: &'a mut Buffer, names: &mut HashMap<String, Object>, 
 }
 
 fn parse_call_expr<'a>(buf: &'a mut Buffer, names: &mut HashMap<String, Object>, call_stack: &mut Vec<CallInfo>, scope_stack: &mut Vec<Vec<String>>, func: &Func) -> Result<Object, Box<dyn Error>> {
-    let mut i = 0;
     let mut args: Vec<Object> = Vec::new();
 
-    while i < func.params.len() {
+    for i in 0..func.params.len() {
         let tok = get_tok(buf)?;
         if let Token::RParen = tok {
             error(buf, format!(
@@ -466,8 +465,6 @@ fn parse_call_expr<'a>(buf: &'a mut Buffer, names: &mut HashMap<String, Object>,
         let arg = match_expr(buf, names, call_stack, scope_stack, tok)?;
 
         args.push(arg);
-
-        i += 1;
     }
     
     let res = match func.name.as_str() {
