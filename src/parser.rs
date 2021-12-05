@@ -513,7 +513,7 @@ fn parse_call_expr<'a>(buf: &'a mut Buffer, names: &mut HashMap<String, Object>,
                 Object::List(ls) => ls[match args[1] {
                     Object::Int(i) => {
                         if i < 0 {
-                            ls.len() - (i * -1) as usize
+                            ls.len() - (0 - i) as usize
                         }
                         else {i as usize}
                     },
