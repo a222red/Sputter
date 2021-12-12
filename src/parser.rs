@@ -46,7 +46,7 @@ pub struct CallInfo {
 #[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord)]
 pub enum Object {
     Function(Func),
-    Int(i32),
+    Int(i64),
     Bool(bool),
     Str(String),
     List(Vec<Object>),
@@ -580,7 +580,7 @@ fn parse_call_expr<'a>(buf: &'a mut Buffer, names: &mut HashMap<String, Object>,
         },
         "exit" => {
             exit(match args[0].val {
-                Object::Int(i) => i,
+                Object::Int(i) => i.try_into().unwrap(),
                 _ => {error(buf, format!("Expected int, got `{:?}`", args[0]))?; 0}
             })
         },
