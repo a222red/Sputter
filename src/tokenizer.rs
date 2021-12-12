@@ -74,6 +74,7 @@ impl Debug for Token {
 }
 
 pub fn get_tok(buf: &mut Buffer) -> Result<Token, Box<dyn Error>> {
+    buf.last_index = buf.index;
     let mut i = buf.index;
     let start: usize;
     let mut tok = Token::Unknown(String::new());
