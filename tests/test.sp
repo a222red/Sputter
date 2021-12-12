@@ -1,4 +1,4 @@
-(def (iter ls size idx fn)
+(def (iter ls: list size: int idx: int fn: function)
     (if (= idx size)
         none
         else (get [
@@ -8,11 +8,11 @@
     )
 )
 
-(def (for ls fn)
+(def (for ls: list fn: function)
     (iter ls (len ls) 0 fn)
 )
 
-(def (fib n)
+(def (fib n: int)
     (if (< n 2)
         n
         else (+ (fib (- n 1)) (fib (- n 2)))
