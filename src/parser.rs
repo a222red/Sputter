@@ -130,28 +130,28 @@ fn parse_paren_expr<'a>(buf: &'a mut Buffer, names: &mut HashMap<String, Object>
                 if let Token::Str(filename) = tok {
                     read(filename.as_str())?
                 }
-                else {error(buf, format!("Expected Str, got {:?}", tok))?; Vec::new()}
+                else {error(buf, format!("Expected string, got {:?}", tok))?; Vec::new()}
             };
             
             let tok = get_tok(buf)?;
 
             match tok {
                 Token::RParen => (),
-                _ => error(buf, format!("Expected token RParen, got token {:?}", tok))?
+                _ => error(buf, format!("Expected `)`, got `{:?}`", tok))?
             };
 
             buf.splice(&slice);
 
             return Ok(Object::None);
         },
-        _ => {error(buf, format!("Expected token LParen, Name or Op, got token {:?}", tok))?; Object::None}
+        _ => {error(buf, format!("Expected `(`, name or operator, got `{:?}`", tok))?; Object::None}
     };
 
     let tok = get_tok(buf)?;
 
     match tok {
         Token::RParen => (),
-        _ => error(buf, format!("Expected token RParen, got token {:?}", tok))?
+        _ => error(buf, format!("Expected `)`, got `{:?}`", tok))?
     };
 
     return Ok(res);
@@ -226,13 +226,13 @@ fn parse_def_expr<'a>(buf: &'a mut Buffer, names: &mut HashMap<String, Object>) 
     let mut tok = get_tok(buf)?;
     match tok {
         Token::LParen => (),
-        _ => error(buf, format!("Expected LParen, got {:?}", tok))?
+        _ => error(buf, format!("Expected `(`, got `{:?}`", tok))?
     }
     
     tok = get_tok(buf)?;
     let name = match tok {
         Token::Name(s) => s,
-        _ => {error(buf, format!("Expected Name, got {:?}", tok))?; String::new()}
+        _ => {error(buf, format!("Expected name, got `{:?}`", tok))?; String::new()}
     };
 
     let mut params = Vec::<String>::new();
@@ -246,7 +246,7 @@ fn parse_def_expr<'a>(buf: &'a mut Buffer, names: &mut HashMap<String, Object>) 
 
     match tok {
         Token::RParen => (),
-        _ => error(buf, format!("Expected RParen, got {:?}", tok))?
+        _ => error(buf, format!("Expected `)`, got `{:?}`", tok))?
     }
 
     let addr = buf.index;
@@ -286,7 +286,7 @@ fn parse_if_expr<'a>(buf: &'a mut Buffer, names: &mut HashMap<String, Object>, c
     let t = match_expr(buf, names, call_stack, scope_stack, tok)?;
     let cond = match t {
         Object::Bool(b) => b,
-        _ => {error(buf, format!("Conditional expression must have type Bool, not {:?}", t))?; false}
+        _ => {error(buf, format!("Conditional expression must have type `bool`, not `{:?}`", t))?; false}
     };
     
     if !cond {
@@ -316,7 +316,7 @@ fn parse_if_expr<'a>(buf: &'a mut Buffer, names: &mut HashMap<String, Object>, c
     tok = get_tok(buf)?;
     match tok {
         Token::Else => (),
-        _ => error(buf, format!("Expected Else after If expression, got {:?}", tok))?
+        _ => error(buf, format!("Expected `else` after `if` expression, got `{:?}`", tok))?
     }
 
     if cond {
@@ -350,7 +350,7 @@ fn parse_lambda_expr<'a>(buf: &'a mut Buffer) -> Result<Object, Box<dyn Error>> 
     let mut tok = get_tok(buf)?;
     match tok {
         Token::LParen => (),
-        _ => error(buf, format!("Expected LParen, got {:?}", tok))?
+        _ => error(buf, format!("Expected `(`, got `{:?}`", tok))?
     }
 
     let mut params: Vec<String> = Vec::new();
@@ -364,7 +364,7 @@ fn parse_lambda_expr<'a>(buf: &'a mut Buffer) -> Result<Object, Box<dyn Error>> 
 
     match tok {
         Token::RParen => (),
-        _ => error(buf, format!("Expected RParen, got {:?}", tok))?
+        _ => error(buf, format!("Expected `)`, got `{:?}`", tok))?
     }
 
     let addr = buf.index;
@@ -398,7 +398,7 @@ fn parse_let_expr<'a>(buf: &'a mut Buffer, names: &mut HashMap<String, Object>, 
     let mut tok = get_tok(buf)?;
     match tok {
         Token::LParen => (),
-        _ => error(buf, format!("Expected LParen, got {:?}", tok))?
+        _ => error(buf, format!("Expected `(`, got `{:?}`", tok))?
     }
 
     scope_stack.push(vec![]);
@@ -414,7 +414,7 @@ fn parse_let_expr<'a>(buf: &'a mut Buffer, names: &mut HashMap<String, Object>, 
         tok = get_tok(buf)?;
         let name = match tok {
             Token::Name(s) => s,
-            _ => {error(buf, format!("Expected Name, got {:?}", tok))?; String::new()}
+            _ => {error(buf, format!("Expected name, got `{:?}`", tok))?; String::new()}
         };
         tok = get_tok(buf)?;
         let val = match_expr(buf, names, call_stack, scope_stack, tok)?;
@@ -426,13 +426,13 @@ fn parse_let_expr<'a>(buf: &'a mut Buffer, names: &mut HashMap<String, Object>, 
         tok = get_tok(buf)?;
         match tok {
             Token::RParen => (),
-            _ => error(buf, format!("Expected RParen, got {:?}", tok))?
+            _ => error(buf, format!("Expected `)`, got `{:?}`", tok))?
         }
     }
 
     match tok {
         Token::RParen => (),
-        _ => error(buf, format!("Expected RParen, got {:?}", tok))?
+        _ => error(buf, format!("Expected `)`, got `{:?}`", tok))?
     }
 
     tok = get_tok(buf)?;
@@ -496,14 +496,14 @@ fn parse_call_expr<'a>(buf: &'a mut Buffer, names: &mut HashMap<String, Object>,
                     else {out.push(c);}
                 }
             }
-            else {error(buf, format!("Expected Str, got {:?}", args[0]))?}
+            else {error(buf, format!("Expected string, got `{:?}`", args[0]))?}
             
             Object::Str(out)
         },
         "exit" => {
             exit(match args[0] {
                 Object::Int(i) => i,
-                _ => {error(buf, format!("Expected Int, got {:?}", args[0]))?; 0}
+                _ => {error(buf, format!("Expected int, got `{:?}`", args[0]))?; 0}
             })
         },
         "get" => {
@@ -515,32 +515,30 @@ fn parse_call_expr<'a>(buf: &'a mut Buffer, names: &mut HashMap<String, Object>,
                         }
                         else {i as usize}
                     },
-                    _ => {error(buf, format!("Expected Int, got {:?}", args[1]))?; 0}
+                    _ => {error(buf, format!("Expected int, got `{:?}`", args[1]))?; 0}
                 }].clone(),
-                _ => {error(buf, format!("Expected List, got {:?}", args[0]))?; Object::None}
+                _ => {error(buf, format!("Expected list, got `{:?}`", args[0]))?; Object::None}
             }
         },
         "len" => {
             match &args[0] {
                 Object::List(ls) => Object::Int(ls.len().try_into()?),
-                _ => {error(buf, format!("Expected List, got {:?}", args[0]))?; Object::None}
+                Object::Str(s) => Object::Int(s.len().try_into()?),
+                _ => {error(buf, format!("Expected list or string, got `{:?}`", args[0]))?; Object::None}
             }
         },
         "range" => {
             let start = match args[0] {
                 Object::Int(i) => i,
-                _ => {error(buf, format!("Expected Int, got {:?}", args[0]))?; 0}
+                _ => {error(buf, format!("Expected int, got `{:?}`", args[0]))?; 0}
             };
             let end = match args[1] {
                 Object::Int(i) => i,
-                _ => {error(buf, format!("Expected Int, got {:?}", args[1]))?; 0}
+                _ => {error(buf, format!("Expected int, got `{:?}`", args[1]))?; 0}
             };
 
             let mut res = Vec::<Object>::new();
-
-            for i in start..end {
-                res.push(Object::Int(i));
-            }
+            for i in start..end {res.push(Object::Int(i));}
 
             Object::List(res)
         },
@@ -601,14 +599,14 @@ fn parse_op_expr<'a>(buf: &'a mut Buffer, names: &mut HashMap<String, Object>, c
             let lhs_obj = match_expr(buf, names, call_stack, scope_stack, tok)?;
             let lhs = match lhs_obj {
                 Object::Int(i) => i,
-                _ => {error(buf, format!("Expected Int, got {:?}", lhs_obj))?; 0}
+                _ => {error(buf, format!("Expected int, got `{:?}`", lhs_obj))?; 0}
             };
 
             tok = get_tok(buf)?;
             let rhs_obj = match_expr(buf, names, call_stack, scope_stack, tok)?;
             let rhs = match rhs_obj {
                 Object::Int(i) => i,
-                _ => {error(buf, format!("Expected Int, got {:?}", rhs_obj))?; 0}
+                _ => {error(buf, format!("Expected int, got `{:?}`", rhs_obj))?; 0}
             };
 
             lhs + rhs
@@ -618,14 +616,14 @@ fn parse_op_expr<'a>(buf: &'a mut Buffer, names: &mut HashMap<String, Object>, c
             let lhs_obj = match_expr(buf, names, call_stack, scope_stack, tok)?;
             let lhs = match lhs_obj {
                 Object::Int(i) => i,
-                _ => {error(buf, format!("Expected Int, got {:?}", lhs_obj))?; 0}
+                _ => {error(buf, format!("Expected int, got `{:?}`", lhs_obj))?; 0}
             };
 
             tok = get_tok(buf)?;
             let rhs_obj = match_expr(buf, names, call_stack, scope_stack, tok)?;
             let rhs = match rhs_obj {
                 Object::Int(i) => i,
-                _ => {error(buf, format!("Expected Int, got {:?}", rhs_obj))?; 0}
+                _ => {error(buf, format!("Expected int, got `{:?}`", rhs_obj))?; 0}
             };
 
             lhs - rhs
@@ -635,14 +633,14 @@ fn parse_op_expr<'a>(buf: &'a mut Buffer, names: &mut HashMap<String, Object>, c
             let lhs_obj = match_expr(buf, names, call_stack, scope_stack, tok)?;
             let lhs = match lhs_obj {
                 Object::Int(i) => i,
-                _ => {error(buf, format!("Expected Int, got {:?}", lhs_obj))?; 0}
+                _ => {error(buf, format!("Expected int, got `{:?}`", lhs_obj))?; 0}
             };
 
             tok = get_tok(buf)?;
             let rhs_obj = match_expr(buf, names, call_stack, scope_stack, tok)?;
             let rhs = match rhs_obj {
                 Object::Int(i) => i,
-                _ => {error(buf, format!("Expected Int, got {:?}", rhs_obj))?; 0}
+                _ => {error(buf, format!("Expected int, got `{:?}`", rhs_obj))?; 0}
             };
 
             lhs * rhs
@@ -652,14 +650,14 @@ fn parse_op_expr<'a>(buf: &'a mut Buffer, names: &mut HashMap<String, Object>, c
             let lhs_obj = match_expr(buf, names, call_stack, scope_stack, tok)?;
             let lhs = match lhs_obj {
                 Object::Int(i) => i,
-                _ => {error(buf, format!("Expected Int, got {:?}", lhs_obj))?; 0}
+                _ => {error(buf, format!("Expected int, got `{:?}`", lhs_obj))?; 0}
             };
 
             tok = get_tok(buf)?;
             let rhs_obj = match_expr(buf, names, call_stack, scope_stack, tok)?;
             let rhs = match rhs_obj {
                 Object::Int(i) => i,
-                _ => {error(buf, format!("Expected Int, got {:?}", rhs_obj))?; 0}
+                _ => {error(buf, format!("Expected int, got `{:?}`", rhs_obj))?; 0}
             };
 
             if rhs == 0 {error(buf, "Cannot divide by 0".to_owned())?}
@@ -678,14 +676,14 @@ fn parse_op_expr<'a>(buf: &'a mut Buffer, names: &mut HashMap<String, Object>, c
             let lhs_obj = match_expr(buf, names, call_stack, scope_stack, tok)?;
             let lhs = match lhs_obj {
                 Object::Int(i) => i,
-                _ => {error(buf, format!("Expected Int, got {:?}", lhs_obj))?; 0}
+                _ => {error(buf, format!("Expected int, got `{:?}`", lhs_obj))?; 0}
             };
 
             tok = get_tok(buf)?;
             let rhs_obj = match_expr(buf, names, call_stack, scope_stack, tok)?;
             let rhs = match rhs_obj {
                 Object::Int(i) => i,
-                _ => {error(buf, format!("Expected Int, got {:?}", rhs_obj))?; 0}
+                _ => {error(buf, format!("Expected int, got `{:?}`", rhs_obj))?; 0}
             };
 
             lhs < rhs
@@ -695,14 +693,14 @@ fn parse_op_expr<'a>(buf: &'a mut Buffer, names: &mut HashMap<String, Object>, c
             let lhs_obj = match_expr(buf, names, call_stack, scope_stack, tok)?;
             let lhs = match lhs_obj {
                 Object::Int(i) => i,
-                _ => {error(buf, format!("Expected Int, got {:?}", lhs_obj))?; 0}
+                _ => {error(buf, format!("Expected int, got `{:?}`", lhs_obj))?; 0}
             };
 
             tok = get_tok(buf)?;
             let rhs_obj = match_expr(buf, names, call_stack, scope_stack, tok)?;
             let rhs = match rhs_obj {
                 Object::Int(i) => i,
-                _ => {error(buf, format!("Expected Int, got {:?}", rhs_obj))?; 0}
+                _ => {error(buf, format!("Expected int, got `{:?}`", rhs_obj))?; 0}
             };
 
             lhs > rhs
