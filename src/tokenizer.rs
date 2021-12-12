@@ -1,6 +1,8 @@
-use std::error::Error;
+use std::{
+    error::Error,
+    fmt::{Debug, Formatter}
+};
 
-#[derive(Debug)]
 pub enum Token {
     Unknown(String),
     LParen,
@@ -22,6 +24,33 @@ pub enum Token {
     False,
     None,
     Use
+}
+
+impl Debug for Token {
+    fn fmt(&self, form: &mut Formatter<'_>) -> Result<(), std::fmt::Error> {
+        write!(form, "{}", match self {
+            Token::Unknown(s) => s.clone(),
+            Token::LParen => "(".to_owned(),
+            Token::RParen => ")".to_owned(),
+            Token::LBrace => "{".to_owned(),
+            Token::RBrace => "}".to_owned(),
+            Token::LBracket => "[".to_owned(),
+            Token::RBracket => "]".to_owned(),
+            Token::Name(s) => s.clone(),
+            Token::Num(s) => s.clone(),
+            Token::Str(s) => format!("\"{}\"", s),
+            Token::Op(s) => s.clone(),
+            Token::Def => "def".to_owned(),
+            Token::Let => "let".to_owned(),
+            Token::Lambda => "lambda".to_owned(),
+            Token::If => "if".to_owned(),
+            Token::Else => "else".to_owned(),
+            Token::True => "true".to_owned(),
+            Token::False => "false".to_owned(),
+            Token::None => "none".to_owned(),
+            Token::Use => "use".to_owned()
+        })
+    }
 }
 
 pub fn get_tok(buf: &mut Buffer) -> Result<Token, Box<dyn Error>> {
@@ -198,7 +227,8 @@ impl Buffer {
             .as_bytes()
             .to_vec();
 
-        self.len += bytes.len();
+        self.len += bytes.len() + 1;
+        self.bytes.push(b'\n');
         self.bytes.extend(bytes);
 
         return Ok(());
