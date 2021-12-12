@@ -43,7 +43,7 @@ macro_rules! gen_builtin {
 }
 
 fn main() -> Result<(), Box<dyn Error>> {
-    let child = thread::Builder::new().stack_size(32 * 1024 * 1024).spawn(|| {
+    let child = thread::Builder::new().name("sputter".to_owned()).stack_size(32 * 1024 * 1024).spawn(|| {
         let mut names = HashMap::<String, Object>::new();
         let mut call_stack = Vec::<CallInfo>::new();
         let mut scope_stack = Vec::<Vec<String>>::new();

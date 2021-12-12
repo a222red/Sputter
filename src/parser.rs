@@ -53,9 +53,7 @@ fn error(buf: &Buffer, msg: String) -> Result<(), Box<dyn Error>> {
             line_start = i + 1;
             line_num += 1;
 
-            if i >= buf.index {
-                line_end = i - 1;
-            };
+            if i >= buf.index {line_end = i - 1;};
         }
     }
 
