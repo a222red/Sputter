@@ -32,7 +32,7 @@ use std::{
 
 /// Define builtin functions with Sputter prototype syntax
 macro_rules! gen_builtin {
-    ($names:ident, $(($name:ident $($params:ident: $types:ident)*))*) => {
+    ($names:ident { $(($name:ident $($params:ident: $types:ident)*))*}) => {
         $($names.insert(
             stringify!($name).to_owned(),
             Object::Function(Func {
@@ -55,7 +55,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         let mut call_stack = Vec::<CallInfo>::new();
         let mut scope_stack = Vec::<Vec<String>>::new();
 
-        gen_builtin!(names,
+        gen_builtin!(names {
             (print content: Any)
             (println content: Any)
             (format format_str: Str object: Any)
@@ -63,7 +63,7 @@ fn main() -> Result<(), Box<dyn Error>> {
             (get ls: Any idx: Int)
             (len ls: Any)
             (range start: Int end: Int)
-        );
+        });
 
         let mut args = std::env::args();
         if args.len() == 2 {
