@@ -24,7 +24,13 @@ pub struct Param {
     pub arg_type: Type
 }
 
-#[derive(Clone, Debug, PartialEq, PartialOrd)]
+#[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord)]
+pub struct Arg {
+    pub val: Object,
+    pub arg_type: Type
+}
+
+#[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord)]
 pub struct Func {
     pub name: String,
     pub addr: usize,
@@ -34,10 +40,10 @@ pub struct Func {
 pub struct CallInfo {
     old_addr: usize,
     params: Vec<Param>,
-    args: Vec<Object>
+    args: Vec<Arg>
 }
 
-#[derive(Clone, Debug, PartialEq, PartialOrd)]
+#[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord)]
 pub enum Object {
     Function(Func),
     Int(i32),
@@ -194,7 +200,7 @@ fn parse_single_name_expr<'a>(buf: &Buffer, names: &mut HashMap<String, Object>,
     if param_names.contains(&name) {
         n = args[
             params.iter().position(|r| *r.name == name).unwrap()
-        ].clone();
+        ].val.clone();
     }
     else {
         if names.contains_key(&name) == false {error(buf, format!("Undefined name: `{}`", name))?}
@@ -221,7 +227,7 @@ fn parse_name_expr<'a>(buf: &'a mut Buffer, names: &mut HashMap<String, Object>,
     if param_names.contains(&name) {
         n = args[
             params.iter().position(|r| *r.name == name).unwrap()
-        ].clone();
+        ].val.clone();
     }
     else {
         if names.contains_key(&name) == false {error(buf, format!("Undefined name: `{}`", name))?}
@@ -499,7 +505,7 @@ fn parse_let_expr<'a>(buf: &'a mut Buffer, names: &mut HashMap<String, Object>, 
 }
 
 fn parse_call_expr<'a>(buf: &'a mut Buffer, names: &mut HashMap<String, Object>, call_stack: &mut Vec<CallInfo>, scope_stack: &mut Vec<Vec<String>>, func: &Func) -> Result<Object, Box<dyn Error>> {
-    let mut args: Vec<Object> = Vec::new();
+    let mut args: Vec<Arg> = Vec::new();
 
     for i in 0..func.params.len() {
         let tok = get_tok(buf)?;
@@ -512,16 +518,36 @@ fn parse_call_expr<'a>(buf: &'a mut Buffer, names: &mut HashMap<String, Object>,
             ))?
         }
 
-        let arg = match_expr(buf, names, call_stack, scope_stack, tok)?;
-
-        args.push(arg);
+        let val = match_expr(buf, names, call_stack, scope_stack, tok)?;
+        let arg = Arg {
+            val: val.clone(),
+            arg_type: match val {
+                Object::Function(_) => Type::Function,
+                Object::Int(_) => Type::Int,
+                Object::Bool(_) => Type::Bool,
+                Object::Str(_) => Type::Str,
+                Object::List(_) => Type::List,
+                Object::None => Type::None
+            }
+        };
+        
+        if arg.arg_type == func.params[i].arg_type || func.params[i].arg_type == Type::Any {
+            args.push(arg);
+        }
+        else {error(buf, format!(
+            "Parameter `{}` of function `{}` expects type `{:?}`, got type `{:?}`",
+            i + 1,
+            func.name,
+            func.params[i].arg_type,
+            arg.arg_type
+        ))?}
     }
     
     let res = match func.name.as_str() {
         "print" => {
             let mut out = String::new();
 
-            print_object_rec(&args[0], &mut out);
+            print_object_rec(&args[0].val, &mut out);
             print!("{}", out);
 
             Object::None
@@ -529,7 +555,7 @@ fn parse_call_expr<'a>(buf: &'a mut Buffer, names: &mut HashMap<String, Object>,
         "println" => {
             let mut out = String::new();
 
-            print_object_rec(&args[0], &mut out);
+            print_object_rec(&args[0].val, &mut out);
             println!("{}", out);
 
             Object::None
@@ -537,12 +563,12 @@ fn parse_call_expr<'a>(buf: &'a mut Buffer, names: &mut HashMap<String, Object>,
         "format" => {
             let mut out = String::new();
 
-            if let Object::Str(s) = &args[0] {
+            if let Object::Str(s) = &args[0].val {
                 for c in s.chars() {
                     if c == '%' {
                         let mut buf = String::new();
 
-                        print_object_rec(&args[1], &mut buf);
+                        print_object_rec(&args[1].val, &mut buf);
                         out.push_str(buf.as_str());
                     }
                     else {out.push(c);}
@@ -553,14 +579,14 @@ fn parse_call_expr<'a>(buf: &'a mut Buffer, names: &mut HashMap<String, Object>,
             Object::Str(out)
         },
         "exit" => {
-            exit(match args[0] {
+            exit(match args[0].val {
                 Object::Int(i) => i,
                 _ => {error(buf, format!("Expected int, got `{:?}`", args[0]))?; 0}
             })
         },
         "get" => {
-            match &args[0] {
-                Object::List(ls) => ls[match args[1] {
+            match &args[0].val {
+                Object::List(ls) => ls[match args[1].val {
                     Object::Int(i) => {
                         if i < 0 {
                             ls.len() - (0 - i) as usize
@@ -573,18 +599,18 @@ fn parse_call_expr<'a>(buf: &'a mut Buffer, names: &mut HashMap<String, Object>,
             }
         },
         "len" => {
-            match &args[0] {
+            match &args[0].val {
                 Object::List(ls) => Object::Int(ls.len().try_into()?),
                 Object::Str(s) => Object::Int(s.len().try_into()?),
                 _ => {error(buf, format!("Expected list or string, got `{:?}`", args[0]))?; Object::None}
             }
         },
         "range" => {
-            let start = match args[0] {
+            let start = match args[0].val {
                 Object::Int(i) => i,
                 _ => {error(buf, format!("Expected int, got `{:?}`", args[0]))?; 0}
             };
-            let end = match args[1] {
+            let end = match args[1].val {
                 Object::Int(i) => i,
                 _ => {error(buf, format!("Expected int, got `{:?}`", args[1]))?; 0}
             };

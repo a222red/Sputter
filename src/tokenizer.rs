@@ -3,7 +3,7 @@ use std::{
     fmt::{Debug, Formatter}
 };
 
-#[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Clone, PartialEq, Eq, PartialOrd, Ord)]
 pub enum Type {
     Function,
     Int,
@@ -12,6 +12,20 @@ pub enum Type {
     List,
     None,
     Any
+}
+
+impl Debug for Type {
+    fn fmt(&self, form: &mut Formatter<'_>) -> Result<(), std::fmt::Error> {
+        write!(form, "{}", match self {
+            Type::Any => "any",
+            Type::Function => "function",
+            Type::Int => "int",
+            Type::Bool => "bool",
+            Type::Str => "string",
+            Type::List => "list",
+            Type::None => "none_t"
+        })
+    }
 }
 
 pub enum Token {
