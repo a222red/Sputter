@@ -221,6 +221,7 @@ pub fn get_tok(buf: &mut Buffer) -> Result<Token, Box<dyn Error>> {
 pub struct Buffer {
     pub bytes: Vec<u8>,
     pub index: usize,
+    pub last_index: usize,
     pub len: usize
 }
 
@@ -236,6 +237,7 @@ impl Buffer {
         return Ok(Buffer {
             bytes,
             index: 0,
+            last_index: 0,
             len
         })
     }
@@ -244,6 +246,7 @@ impl Buffer {
         Buffer {
             bytes: Vec::new(),
             index: 0,
+            last_index: 0,
             len: 0
         }
     }
