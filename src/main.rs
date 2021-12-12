@@ -88,7 +88,7 @@ fn main() -> Result<(), Box<dyn Error>> {
                     res = match_expr(&mut buf, &mut names, &mut call_stack, &mut scope_stack, tok).unwrap();
                 }
 
-                println!("=> {:?}", res);
+                println!("\u{001b}[36m=> {:?}\u{001b}[0m", res);
             }
         }
     })?;
