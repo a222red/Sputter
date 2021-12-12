@@ -3,13 +3,15 @@ use std::{
     fmt::{Debug, Formatter}
 };
 
+#[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord)]
 pub enum Type {
     Function,
     Int,
     Bool,
     Str,
     List,
-    None
+    None,
+    Any
 }
 
 pub enum Token {
@@ -67,7 +69,8 @@ impl Debug for Token {
                 Type::Bool => "bool",
                 Type::Str => "string",
                 Type::List => "list",
-                Type::None => "none_t"
+                Type::None => "none_t",
+                Type::Any => "any"
             }).to_owned()
         })
     }

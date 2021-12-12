@@ -4,12 +4,14 @@ mod parser;
 use crate::{
     tokenizer::{
         Buffer,
+        Type,
         get_tok
     },
     parser::{
         Object,
         Func,
         CallInfo,
+        Param,
         match_expr
     }
 };
@@ -36,7 +38,10 @@ macro_rules! gen_builtin {
             Object::Function(Func {
                 name: stringify!($name).to_owned(),
                 addr: 0,
-                params: vec![$(stringify!($params).to_owned()),*]
+                params: vec![$(Param {
+                    name: stringify!($params).to_owned(),
+                    arg_type: Type::Any
+                }),*]
             })
         ));*
     };

@@ -18,16 +18,22 @@ enum Op {
     Gt,
 }
 
+#[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord)]
+pub struct Param {
+    pub name: String,
+    pub arg_type: Type
+}
+
 #[derive(Clone, Debug, PartialEq, PartialOrd)]
 pub struct Func {
     pub name: String,
     pub addr: usize,
-    pub params: Vec<String>
+    pub params: Vec<Param>
 }
 
 pub struct CallInfo {
     old_addr: usize,
-    params: Vec<String>,
+    params: Vec<Param>,
     args: Vec<Object>
 }
 
@@ -182,9 +188,12 @@ fn parse_single_name_expr<'a>(buf: &Buffer, names: &mut HashMap<String, Object>,
     };
 
     let n: Object;
-    if params.contains(&name) {
+    let mut param_names = Vec::<String>::new();
+    for p in &params {param_names.push(p.name.clone());}
+
+    if param_names.contains(&name) {
         n = args[
-            params.iter().position(|r| *r == name).unwrap()
+            params.iter().position(|r| *r.name == name).unwrap()
         ].clone();
     }
     else {
@@ -206,9 +215,12 @@ fn parse_name_expr<'a>(buf: &'a mut Buffer, names: &mut HashMap<String, Object>,
     };
 
     let n: Object;
-    if params.contains(&name) {
+    let mut param_names = Vec::<String>::new();
+    for p in &params {param_names.push(p.name.clone());}
+
+    if param_names.contains(&name) {
         n = args[
-            params.iter().position(|r| *r == name).unwrap()
+            params.iter().position(|r| *r.name == name).unwrap()
         ].clone();
     }
     else {
@@ -235,12 +247,32 @@ fn parse_def_expr<'a>(buf: &'a mut Buffer, names: &mut HashMap<String, Object>) 
         _ => {error(buf, format!("Expected name, got `{:?}`", tok))?; String::new()}
     };
 
-    let mut params = Vec::<String>::new();
+    let mut params = Vec::<Param>::new();
+    let mut idx: usize;
     loop {
+        let name: String;
+        let mut arg_type = Type::Any;
+
         tok = get_tok(buf)?;
-        params.push(match tok {
-            Token::Name(s) => s,
-            _ => break
+        if let Token::Name(s) = tok {name = s}
+        else {break}
+
+        idx = buf.index;
+        tok = get_tok(buf)?;
+
+        match tok {
+            Token::Colon => {
+                tok = get_tok(buf)?;
+
+                if let Token::Typename(t) = tok {arg_type = t}
+                else {error(buf, "Expected type after `:`".to_owned())?}
+            },
+            _ => buf.index = idx
+        }
+
+        params.push(Param {
+            name,
+            arg_type
         });
     }
 
@@ -353,12 +385,32 @@ fn parse_lambda_expr<'a>(buf: &'a mut Buffer) -> Result<Object, Box<dyn Error>> 
         _ => error(buf, format!("Expected `(`, got `{:?}`", tok))?
     }
 
-    let mut params: Vec<String> = Vec::new();
+    let mut params = Vec::<Param>::new();
+    let mut idx: usize;
     loop {
+        let name: String;
+        let mut arg_type = Type::Any;
+
         tok = get_tok(buf)?;
-        params.push(match tok {
-            Token::Name(s) => s,
-            _ => break
+        if let Token::Name(s) = tok {name = s}
+        else {break}
+
+        idx = buf.index;
+        tok = get_tok(buf)?;
+
+        match tok {
+            Token::Colon => {
+                tok = get_tok(buf)?;
+
+                if let Token::Typename(t) = tok {arg_type = t}
+                else {error(buf, "Expected type after `:`".to_owned())?}
+            },
+            _ => buf.index = idx
+        }
+
+        params.push(Param {
+            name,
+            arg_type
         });
     }
 
