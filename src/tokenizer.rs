@@ -20,6 +20,7 @@ pub enum Token {
     RBracket,
     LBrace,
     RBrace,
+    Colon,
     Name(String),
     Num(String),
     Str(String),
@@ -46,6 +47,7 @@ impl Debug for Token {
             Token::RBrace => "}".to_owned(),
             Token::LBracket => "[".to_owned(),
             Token::RBracket => "]".to_owned(),
+            Token::Colon => ":".to_owned(),
             Token::Name(s) => s.clone(),
             Token::Num(s) => s.clone(),
             Token::Str(s) => format!("\"{}\"", s),
@@ -165,6 +167,10 @@ pub fn get_tok(buf: &mut Buffer) -> Result<Token, Box<dyn Error>> {
     else if buf.bytes[i] == b'}' {
         i += 1;
         tok = Token::RBrace;
+    }
+    else if buf.bytes[i] == b':' {
+        i += 1;
+        tok = Token::Colon;
     }
     else if buf.bytes[i] == b'+' || buf.bytes[i] == b'-' || buf.bytes[i] == b'*' || buf.bytes[i] == b'/' 
         || buf.bytes[i] == b'=' || buf.bytes[i] == b'<' || buf.bytes[i] == b'>'
