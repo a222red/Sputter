@@ -19,7 +19,7 @@ use crate::{
 use std::{
     collections::HashMap,
     error::Error,
-    thread,
+    thread::Builder,
     fs::File,
     io::Read,
     path::Path,
@@ -27,7 +27,7 @@ use std::{
         stdin,
         stdout,
         Write
-    },
+    }
 };
 
 /// Define builtin functions with Sputter prototype syntax
@@ -47,8 +47,10 @@ macro_rules! gen_builtin {
     };
 }
 
+const STACK_SIZE: usize = 32 * 1024 * 1024;
+
 fn main() -> Result<(), Box<dyn Error>> {
-    let child = thread::Builder::new().name("sputter".to_owned()).stack_size(32 * 1024 * 1024).spawn(|| {
+    let child = Builder::new().name("sputter".to_owned()).stack_size(STACK_SIZE).spawn(|| {
         let mut names = HashMap::<String, Object>::new();
         let mut call_stack = Vec::<CallInfo>::new();
         let mut scope_stack = Vec::<Vec<String>>::new();
