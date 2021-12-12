@@ -536,7 +536,7 @@ fn parse_call_expr<'a>(buf: &'a mut Buffer, names: &mut HashMap<String, Object>,
         }
         else {error(buf, format!(
             "Parameter `{}` of function `{}` expects type `{:?}`, got type `{:?}`",
-            i + 1,
+            func.params[i].name,
             func.name,
             func.params[i].arg_type,
             arg.arg_type
