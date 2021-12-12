@@ -3,6 +3,15 @@ use std::{
     fmt::{Debug, Formatter}
 };
 
+pub enum Type {
+    Function,
+    Int,
+    Bool,
+    Str,
+    List,
+    None
+}
+
 pub enum Token {
     Unknown(String),
     LParen,
@@ -23,7 +32,8 @@ pub enum Token {
     True,
     False,
     None,
-    Use
+    Use,
+    Typename(Type)
 }
 
 impl Debug for Token {
@@ -48,7 +58,15 @@ impl Debug for Token {
             Token::True => "true".to_owned(),
             Token::False => "false".to_owned(),
             Token::None => "none".to_owned(),
-            Token::Use => "use".to_owned()
+            Token::Use => "use".to_owned(),
+            Token::Typename(t) => (match t {
+                Type::Function => "function",
+                Type::Int => "int",
+                Type::Bool => "bool",
+                Type::Str => "string",
+                Type::List => "list",
+                Type::None => "none_t"
+            }).to_owned()
         })
     }
 }
@@ -178,6 +196,12 @@ pub fn get_tok(buf: &mut Buffer) -> Result<Token, Box<dyn Error>> {
                 "false" => Token::False,
                 "none" => Token::None,
                 "use" => Token::Use,
+                "function" => Token::Typename(Type::Function),
+                "int" => Token::Typename(Type::Int),
+                "bool" => Token::Typename(Type::Bool),
+                "string" => Token::Typename(Type::Str),
+                "list" => Token::Typename(Type::List),
+                "none_t" => Token::Typename(Type::None),
                 _ => tok
             }
         },
