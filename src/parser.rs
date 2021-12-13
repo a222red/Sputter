@@ -140,7 +140,7 @@ fn parse_paren_expr<'a>(buf: &'a mut Buffer, names: &mut HashMap<String, Object>
             let tok = get_tok(buf)?;
 
             let slice = {
-                if let Token::Str(filename) = tok {read(filename.as_str())?}
+                if let Token::Str(filename) = tok {read(filename.replace("~", &std::env::var("SPUTTER_INCLUDE")?))?}
                 else {error(buf, format!("Expected string, got {:?}", tok))?; Vec::new()}
             };
             
@@ -152,8 +152,6 @@ fn parse_paren_expr<'a>(buf: &'a mut Buffer, names: &mut HashMap<String, Object>
             };
 
             buf.splice(&slice);
-
-            println!("{}", String::from_utf8(buf.bytes.clone()).unwrap());
 
             return Ok(Object::None);
         },
