@@ -559,6 +559,12 @@ fn parse_call_expr<'a>(buf: &'a mut Buffer, names: &mut HashMap<String, Object>,
 
             Object::None
         },
+        "readln" => {
+            let mut s = String::new();
+            std::io::stdin().read_line(&mut s)?;
+
+            Object::Str(s)
+        }
         "format" => {
             let mut out = String::new();
 

@@ -58,6 +58,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         gen_builtin!(names {
             (print content: Any)
             (println content: Any)
+            (readln)
             (format format_str: Str object: Any)
             (exit code: Int)
             (get ls: Any idx: Int)
