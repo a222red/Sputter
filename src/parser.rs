@@ -683,23 +683,37 @@ fn parse_op_expr<'a>(buf: &'a mut Buffer, names: &mut HashMap<String, Object>, c
     let mut tok: Token;
     
     Ok(match op {
-        Op::Add => Object::Int({
+        Op::Add => {
             tok = get_tok(buf)?;
             let lhs_obj = match_expr(buf, names, call_stack, scope_stack, tok)?;
-            let lhs = match lhs_obj {
-                Object::Int(i) => i,
-                _ => {error(buf, format!("Expected int, got `{:?}`", lhs_obj))?; 0}
-            };
+            match lhs_obj {
+                Object::Int(i) => {
+                    tok = get_tok(buf)?;
 
-            tok = get_tok(buf)?;
-            let rhs_obj = match_expr(buf, names, call_stack, scope_stack, tok)?;
-            let rhs = match rhs_obj {
-                Object::Int(i) => i,
-                _ => {error(buf, format!("Expected int, got `{:?}`", rhs_obj))?; 0}
-            };
+                    let rhs_obj = match_expr(buf, names, call_stack, scope_stack, tok)?;
+                    let rhs = match rhs_obj {
+                        Object::Int(i) => i,
+                        _ => {error(buf, format!("Expected int, got `{:?}`", rhs_obj))?; 0}
+                    };
 
-            lhs + rhs
-        }),
+                    Object::Int(i + rhs)
+                },
+                Object::Str(s) => {
+                    tok = get_tok(buf)?;
+
+                    let rhs_obj = match_expr(buf, names, call_stack, scope_stack, tok)?;
+                    let rhs = match rhs_obj {
+                        Object::Str(s) => s,
+                        _ => {error(buf, format!("Expected int, got `{:?}`", rhs_obj))?; String::new()}
+                    };
+                    let mut out = s;
+                    out.push_str(&rhs);
+                    
+                    Object::Str(out)
+                }
+                _ => {error(buf, format!("Expected int, got `{:?}`", lhs_obj))?; Object::None}
+            }
+        },
         Op::Sub => Object::Int({
             tok = get_tok(buf)?;
             let lhs_obj = match_expr(buf, names, call_stack, scope_stack, tok)?;
