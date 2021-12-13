@@ -65,7 +65,9 @@ fn main() -> Result<(), Box<dyn Error>> {
             (range start: Int end: Int)
         });
 
+        // TODO: Use Clap for arg parsing
         let mut args = std::env::args();
+        // Run file specified by command line arg
         if args.len() == 2 {
             let mut buf = Buffer::new(read(args.nth(1).unwrap().as_str()).unwrap()).unwrap();
 
@@ -74,6 +76,7 @@ fn main() -> Result<(), Box<dyn Error>> {
                 match_expr(&mut buf, &mut names, &mut call_stack, &mut scope_stack, tok).unwrap();
             }
         }
+        // REPL
         else if args.len() == 1 {
             let stdin = stdin();
             let mut buf = Buffer::new_empty();

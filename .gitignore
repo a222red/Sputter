@@ -3,3 +3,5 @@
 .vscode/tasks.json
 /src/sputter.code_workspace
 sputter.code_workspace
+replit.nix
+.replit

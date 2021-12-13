@@ -65,7 +65,7 @@ fn error(buf: &Buffer, msg: String) -> Result<(), Box<dyn Error>> {
             line_start = i + 1;
             line_num += 1;
 
-            if i >= buf.index {line_end = i - 1};
+            if i >= buf.index && i > line_start {line_end = i - 1};
         }
     }
 
@@ -99,6 +99,7 @@ pub fn match_expr<'a>(buf: &'a mut Buffer, names: &mut HashMap<String, Object>, 
         Token::None => Object::None,
         Token::LParen => parse_paren_expr(buf, names, call_stack, scope_stack)?,
         Token::LBracket => parse_list_expr(buf, names, call_stack, scope_stack)?,
+        Token::Empty => Object::None,
         _ => {error(buf, format!("Expected expression, got `{:?}`", tok))?; Object::None}
     })
 }
@@ -139,9 +140,7 @@ fn parse_paren_expr<'a>(buf: &'a mut Buffer, names: &mut HashMap<String, Object>
             let tok = get_tok(buf)?;
 
             let slice = {
-                if let Token::Str(filename) = tok {
-                    read(filename.as_str())?
-                }
+                if let Token::Str(filename) = tok {read(filename.as_str())?}
                 else {error(buf, format!("Expected string, got {:?}", tok))?; Vec::new()}
             };
             
@@ -153,6 +152,8 @@ fn parse_paren_expr<'a>(buf: &'a mut Buffer, names: &mut HashMap<String, Object>
             };
 
             buf.splice(&slice);
+
+            println!("{}", String::from_utf8(buf.bytes.clone()).unwrap());
 
             return Ok(Object::None);
         },

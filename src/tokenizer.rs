@@ -30,6 +30,7 @@ impl Debug for Type {
 
 pub enum Token {
     Unknown(String),
+    Empty,
     LParen,
     RParen,
     LBracket,
@@ -56,6 +57,7 @@ pub enum Token {
 impl Debug for Token {
     fn fmt(&self, form: &mut Formatter<'_>) -> Result<(), std::fmt::Error> {
         write!(form, "{}", match self {
+            Token::Empty => "".to_owned(),
             Token::Unknown(s) => s.clone(),
             Token::LParen => "(".to_owned(),
             Token::RParen => ")".to_owned(),
@@ -94,7 +96,7 @@ pub fn get_tok(buf: &mut Buffer) -> Result<Token, Box<dyn Error>> {
     buf.last_index = buf.index;
     let mut i = buf.index;
     let start: usize;
-    let mut tok = Token::Unknown(String::new());
+    let mut tok = Token::Empty;
     
     // Ignore leading whitespace
     while i < buf.len {
@@ -102,6 +104,11 @@ pub fn get_tok(buf: &mut Buffer) -> Result<Token, Box<dyn Error>> {
             break;
         }
         i += 1;
+    }
+
+    if i == buf.len {
+        buf.index = i;
+        return Ok(tok);
     }
 
     // Ignore comments
@@ -286,6 +293,10 @@ impl Buffer {
     }
 
     pub fn splice(&mut self, slice: &[u8]) {
+        self.bytes.push(b'\n');
+        self.index += 1;
+        self.len += 1;
+
         self.bytes.splice(self.index..self.index, slice.iter().cloned());
         self.len += slice.len();
     }
