@@ -5,7 +5,12 @@ use std::{
     error::Error,
     process::exit,
     convert::TryInto,
-    fs::read
+    fs::read,
+    io::{
+        stdin,
+        stdout,
+        Write
+    }
 };
 
 enum Op {
@@ -548,6 +553,7 @@ fn parse_call_expr<'a>(buf: &'a mut Buffer, names: &mut HashMap<String, Object>,
 
             print_object_rec(&args[0].val, &mut out);
             print!("{}", out);
+            stdout().flush()?;
 
             Object::None
         },
@@ -561,7 +567,7 @@ fn parse_call_expr<'a>(buf: &'a mut Buffer, names: &mut HashMap<String, Object>,
         },
         "readln" => {
             let mut s = String::new();
-            std::io::stdin().read_line(&mut s)?;
+            stdin().read_line(&mut s)?;
 
             Object::Str(s)
         }

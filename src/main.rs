@@ -47,6 +47,7 @@ macro_rules! gen_builtin {
     };
 }
 
+/// Constant specifying the amount of stack space available to the execution thread
 const STACK_SIZE: usize = 32 * 1024 * 1024;
 
 fn main() -> Result<(), Box<dyn Error>> {
@@ -104,6 +105,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     return Ok(());
 }
 
+/// Reads the contents of a file to an allocated buffer
 fn read(filename: &str) -> Result<Vec<u8>, Box<dyn Error>> {
     let path = Path::new(filename);
     
