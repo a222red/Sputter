@@ -1,19 +1,23 @@
 mod tokenizer;
+mod object;
+mod call;
 mod parser;
 
 use crate::{
     tokenizer::{
         Buffer,
-        Type,
         get_tok
     },
-    parser::{
-        Object,
+    object::{
+        Type,
+        Object
+    },
+    call::{
         Func,
         CallInfo,
         Param,
-        match_expr
-    }
+    },
+    parser::match_expr
 };
 
 use std::{
