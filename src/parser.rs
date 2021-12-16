@@ -36,6 +36,33 @@ enum Op {
     Gt,
 }
 
+pub fn eat_expr<'a>(buf: &'a mut Buffer) -> Result<(), Box<dyn Error>> {
+    let mut lparens = 0usize;
+    let mut lbrackets = 0usize;
+
+    let mut tok = get_tok(buf)?;
+    match tok {
+        Token::LParen => lparens += 1,
+        Token::RParen => lparens -= 1,
+        Token::LBracket => lbrackets += 1,
+        Token::RBracket => lbrackets -= 1,
+        _ => ()
+    }
+
+    while lparens > 0 || lbrackets > 0 {
+        tok = get_tok(buf)?;
+        match tok {
+            Token::LParen => lparens += 1,
+            Token::RParen => lparens -= 1,
+            Token::LBracket => lbrackets += 1,
+            Token::RBracket => lbrackets -= 1,
+            _ => ()
+        }
+    }
+
+    return Ok(());
+}
+
 pub fn match_expr<'a>(buf: &'a mut Buffer, names: &mut HashMap<String, Object>, call_stack: &mut Vec<CallInfo>, scope_stack: &mut Vec<Vec<String>>, tok: Token) -> Result<Object, Box<dyn Error>> {
     Ok(match tok {
         Token::Name(n) => parse_single_name_expr(buf, names, call_stack, n)?,
@@ -197,25 +224,7 @@ fn parse_if_expr<'a>(buf: &'a mut Buffer, names: &mut HashMap<String, Object>, c
         _ => {output::error(buf, format!("Conditional expression must have type `bool`, not `{:?}`", t))?; false}
     };
     
-    if !cond {
-        let mut lparens: usize = 0;
-
-        tok = get_tok(buf)?;
-        match tok {
-            Token::LParen => lparens += 1,
-            Token::RParen => lparens -= 1,
-            _ => ()
-        }
-
-        while lparens > 0 {
-            tok = get_tok(buf)?;
-            match tok {
-                Token::LParen => lparens += 1,
-                Token::RParen => lparens -= 1,
-                _ => ()
-            }
-        }
-    }
+    if !cond {eat_expr(buf)?}
     else {
         tok = get_tok(buf)?;
         res = match_expr(buf, names, call_stack, scope_stack, tok)?;
@@ -227,25 +236,7 @@ fn parse_if_expr<'a>(buf: &'a mut Buffer, names: &mut HashMap<String, Object>, c
         _ => output::error(buf, format!("Expected `else` after `if` expression, got `{:?}`", tok))?
     }
 
-    if cond {
-        let mut lparens = 0usize;
-
-        tok = get_tok(buf)?;
-        match tok {
-            Token::LParen => lparens += 1,
-            Token::RParen => lparens -= 1,
-            _ => ()
-        }
-
-        while lparens > 0 {
-            tok = get_tok(buf)?;
-            match tok {
-                Token::LParen => lparens += 1,
-                Token::RParen => lparens -= 1,
-                _ => ()
-            }
-        }
-    }
+    if cond {eat_expr(buf)?}
     else {
         tok = get_tok(buf)?;
         res = match_expr(buf, names, call_stack, scope_stack, tok)?;

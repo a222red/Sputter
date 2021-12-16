@@ -59,23 +59,7 @@ pub fn parse_def_expr<'a>(buf: &'a mut Buffer, names: &mut HashMap<String, Objec
 
     let addr = buf.index;
 
-    let mut lparens: usize = 0;
-
-    tok = get_tok(buf)?;
-    match tok {
-        Token::LParen => lparens += 1,
-        Token::RParen => lparens -= 1,
-        _ => ()
-    }
-
-    while lparens > 0 {
-        tok = get_tok(buf)?;
-        match tok {
-            Token::LParen => lparens += 1,
-            Token::RParen => lparens -= 1,
-            _ => ()
-        }
-    }
+    eat_expr(buf)?;
 
     names.insert(name.clone(), Object::Function(Func {
         addr,
