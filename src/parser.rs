@@ -34,6 +34,8 @@ enum Op {
     Eq,
     Lt,
     Gt,
+    Or,
+    And
 }
 
 pub fn eat_expr<'a>(buf: &'a mut Buffer) -> Result<(), Box<dyn Error>> {
@@ -108,6 +110,8 @@ fn parse_paren_expr<'a>(buf: &'a mut Buffer, names: &mut HashMap<String, Object>
             "=" => Op::Eq,
             "<" => Op::Lt,
             ">" => Op::Gt,
+            "|" => Op::Or,
+            "&" => Op::And,
             _ => {output::error(buf, format!("Invalid operator: `{}`", o))?; Op::Add}
         })?,
         Token::Use => {
@@ -468,5 +472,39 @@ fn parse_op_expr<'a>(buf: &'a mut Buffer, names: &mut HashMap<String, Object>, c
 
             lhs > rhs
         }),
+        Op::Or => Object::Bool({
+            tok = get_tok(buf)?;
+            let lhs_obj = match_expr(buf, names, call_stack, scope_stack, tok)?;
+            let lhs = match lhs_obj {
+                Object::Bool(b) => b,
+                _ => {output::error(buf, format!("Expected bool, got `{:?}`", lhs_obj))?; false}
+            };
+
+            tok = get_tok(buf)?;
+            let rhs_obj = match_expr(buf, names, call_stack, scope_stack, tok)?;
+            let rhs = match rhs_obj {
+                Object::Bool(b) => b,
+                _ => {output::error(buf, format!("Expected bool, got `{:?}`", rhs_obj))?; false}
+            };
+
+            lhs || rhs
+        }),
+        Op::And => Object::Bool({
+            tok = get_tok(buf)?;
+            let lhs_obj = match_expr(buf, names, call_stack, scope_stack, tok)?;
+            let lhs = match lhs_obj {
+                Object::Bool(b) => b,
+                _ => {output::error(buf, format!("Expected bool, got `{:?}`", lhs_obj))?; false}
+            };
+
+            tok = get_tok(buf)?;
+            let rhs_obj = match_expr(buf, names, call_stack, scope_stack, tok)?;
+            let rhs = match rhs_obj {
+                Object::Bool(b) => b,
+                _ => {output::error(buf, format!("Expected bool, got `{:?}`", rhs_obj))?; false}
+            };
+
+            lhs && rhs
+        })
     })
 }

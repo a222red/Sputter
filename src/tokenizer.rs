@@ -175,7 +175,8 @@ pub fn get_tok(buf: &mut Buffer) -> Result<Token, Box<dyn Error>> {
         tok = Token::Colon;
     }
     else if buf.bytes[i] == b'+' || buf.bytes[i] == b'-' || buf.bytes[i] == b'*' || buf.bytes[i] == b'/' 
-        || buf.bytes[i] == b'=' || buf.bytes[i] == b'<' || buf.bytes[i] == b'>'
+        || buf.bytes[i] == b'=' || buf.bytes[i] == b'<' || buf.bytes[i] == b'>' || buf.bytes[i] == b'|'
+        || buf.bytes[i] == b'&'
     {
         i += 1;
         tok = Token::Op(String::from_utf8(buf.bytes[start..i].to_vec())?);
