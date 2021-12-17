@@ -10,7 +10,7 @@ use crate::{
     }
 };
 
-pub fn param_list<'a>(buf: &'a mut Buffer, tok: &mut Token) -> Result<Vec<Param>, Box<dyn Error>> {
+fn parse_param_list<'a>(buf: &'a mut Buffer, tok: &mut Token) -> Result<Vec<Param>, Box<dyn Error>> {
     let mut params = Vec::<Param>::new();
     let mut idx: usize;
     loop {
@@ -56,7 +56,7 @@ pub fn parse_def_expr<'a>(buf: &'a mut Buffer, names: &mut HashMap<String, Objec
         _ => {output::error(buf, format!("Expected name, got `{:?}`", tok))?; panic!("")}
     };
 
-    let params = param_list(buf, &mut tok)?;
+    let params = parse_param_list(buf, &mut tok)?;
 
     match tok {
         Token::RParen => (),
@@ -83,7 +83,7 @@ pub fn parse_lambda_expr<'a>(buf: &'a mut Buffer) -> Result<Object, Box<dyn Erro
         _ => output::error(buf, format!("Expected `(`, got `{:?}`", tok))?
     }
 
-    let params = param_list(buf, &mut tok)?;
+    let params = parse_param_list(buf, &mut tok)?;
 
     match tok {
         Token::RParen => (),
