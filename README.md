@@ -5,5 +5,5 @@
 - Readable errors: Sputter has Clang-style error messages that show the line and token where the error was detected.
 - Immutability: Variables are evaluated once when they enter scope, and cannot be modified or reevaluated afterward.
 - Strict control flow: Every `if` statement must have a corresponding `else` to prevent unintentional returns.
-- Simple type system: Sputter features a `list` type rather than unevaluated cons-pairs.
+- Simple type system: Sputter features a simple set of types, including `list` type rather than unevaluated cons-pairs. Types can never be implicitly converted, preventing unwanted conversions.
 - Semi-gradual typing: Sputter is dynamically typed, but function parameters can optionally specify a type, and an error will be thrown from the caller rather than the callee if said type isn't matched.
