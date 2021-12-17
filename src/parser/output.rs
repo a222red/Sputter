@@ -29,10 +29,12 @@ pub fn error(buf: &Buffer, msg: String) -> Result<(), Box<dyn Error>> {
     
     for i in 0..buf.len {
         if buf.bytes[i] == b'\n' {
-            line_start = i + 1;
-            line_num += 1;
+            if i < buf.index {
+                line_start = i + 1;
+                line_num += 1;
+            }
 
-            if i >= buf.index && i > line_start {line_end = i - 1};
+            if i >= buf.index && i > line_start {line_end = i};
         }
     }
 
