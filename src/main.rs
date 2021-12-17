@@ -51,11 +51,18 @@ macro_rules! gen_builtin {
     };
 }
 
+/// Shorthand macro for spawning a thread
+macro_rules! spawn_thread {
+    ($name:literal, $stack_size:expr, $f:expr) => {
+        Builder::new().name($name.to_owned()).stack_size($stack_size).spawn($f)?
+    };
+}
+
 /// Constant specifying the amount of stack space available to the execution thread
 const STACK_SIZE: usize = 32 * 1024 * 1024;
 
 fn main() -> Result<(), Box<dyn Error>> {
-    let child = Builder::new().name("sputter".to_owned()).stack_size(STACK_SIZE).spawn(|| {
+    let child = spawn_thread!("Sputter", STACK_SIZE, || {
         let mut names = HashMap::<String, Object>::new();
         let mut call_stack = Vec::<CallInfo>::new();
         let mut scope_stack = Vec::<Vec<String>>::new();
@@ -102,7 +109,7 @@ fn main() -> Result<(), Box<dyn Error>> {
                 println!("\u{001b}[36m=> {:?}\u{001b}[0m", res);
             }
         }
-    })?;
+    });
 
     child.join().unwrap();
 
