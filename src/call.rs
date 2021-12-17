@@ -115,7 +115,7 @@ pub fn call_function<'a>(buf: &'a mut Buffer, names: &mut HashMap<String, Object
             };
 
             if idx >= ls.len() {
-                output::error(buf, format!("Index is {} but the length is {}", idx, ls.len()))?;
+                output::error(buf, format!("Index is {} but the length of {:?} is {}", idx, ls, ls.len()))?;
             }
             ls[idx].clone()
         },
