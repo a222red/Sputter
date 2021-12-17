@@ -100,18 +100,24 @@ pub fn call_function<'a>(buf: &'a mut Buffer, names: &mut HashMap<String, Object
             })
         },
         "get" => {
-            match &args[0].val {
-                Object::List(ls) => ls[match args[1].val {
-                    Object::Int(i) => {
-                        if i < 0 {
-                            ls.len() - (0 - i) as usize
-                        }
-                        else {i as usize}
-                    },
-                    _ => {output::error(buf, format!("Expected int, got `{:?}`", args[1]))?; 0}
-                }].clone(),
-                _ => {output::error(buf, format!("Expected list, got `{:?}`", args[0]))?; Object::None}
+            let ls = match &args[0].val {
+                Object::List(ls) => ls.clone(),
+                _ => {output::error(buf, format!("Expected list, got `{:?}`", args[0]))?; vec![]}
+            };
+            let idx = match args[1].val {
+                Object::Int(i) => {
+                    if i < 0 {
+                        ls.len() - (0 - i) as usize
+                    }
+                    else {i as usize}
+                },
+                _ => {output::error(buf, format!("Expected int, got `{:?}`", args[1]))?; 0}
+            };
+
+            if idx >= ls.len() {
+                output::error(buf, format!("Index is {} but the length is {}", idx, ls.len()))?;
             }
+            ls[idx].clone()
         },
         "len" => {
             match &args[0].val {

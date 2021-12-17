@@ -12,6 +12,6 @@
 (def (push vec:list item)
     (if (= (get vec 0) none)
         ([item none])
-        else [(get vec 0) (push (get vec 1))]
+        else [(get vec 0) (push [(get vec 1)] item)]
     )
 )
