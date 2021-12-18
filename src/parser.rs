@@ -85,11 +85,6 @@ fn parse_paren_expr<'a>(buf: &'a mut Buffer, names: &mut HashMap<String, Object>
 
     let res = match tok {
         Token::Name(n) => parse_name_expr(buf, names, call_stack, scope_stack, n)?,
-        Token::Num(n) => Object::Int(n.parse()?),
-        Token::Str(s) => Object::Str(s),
-        Token::True => Object::Bool(true),
-        Token::False => Object::Bool(false),
-        Token::None => Object::None,
         Token::Def => funcdef::parse_def_expr(buf, names)?,
         Token::If => parse_if_expr(buf, names, call_stack, scope_stack)?,
         Token::Lambda => funcdef::parse_lambda_expr(buf)?,
@@ -101,7 +96,6 @@ fn parse_paren_expr<'a>(buf: &'a mut Buffer, names: &mut HashMap<String, Object>
                 _ => temp
             }
         },
-        Token::LBracket => parse_list_expr(buf, names, call_stack, scope_stack)?,
         Token::Op(o) => parse_op_expr(buf, names, call_stack, scope_stack, match o.as_str() {
             "+" => Op::Add,
             "-" => Op::Sub,
@@ -133,7 +127,7 @@ fn parse_paren_expr<'a>(buf: &'a mut Buffer, names: &mut HashMap<String, Object>
 
             return Ok(Object::None);
         },
-        _ => {output::error(buf, format!("Expected `(`, name or operator, got `{:?}`", tok))?; Object::None}
+        _ => {match_expr(buf, names, call_stack, scope_stack, tok)?}
     };
 
     let tok = get_tok(buf)?;
