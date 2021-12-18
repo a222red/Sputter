@@ -1,9 +1,18 @@
 use std::{
     error::Error,
-    fmt::{Debug, Formatter}
+    fmt::{
+        Debug,
+        Formatter
+    }
 };
 
-use crate::object::Type;
+use crate::{
+    object::Type,
+    parser::{
+        op::Op,
+        output::error
+    }
+};
 
 pub enum Token {
     Unknown(String),
@@ -18,7 +27,7 @@ pub enum Token {
     Name(String),
     Num(String),
     Str(String),
-    Op(String),
+    Op(Op),
     Def,
     Let,
     Lambda,
@@ -46,7 +55,17 @@ impl Debug for Token {
             Token::Name(s) => s.clone(),
             Token::Num(s) => s.clone(),
             Token::Str(s) => format!("\"{}\"", s),
-            Token::Op(s) => s.clone(),
+            Token::Op(o) => match o {
+                Op::Add => "+",
+                Op::Sub => "-",
+                Op::Mul => "*",
+                Op::Div => "/",
+                Op::Eq => "=",
+                Op::Gt => ">",
+                Op::Lt => "<",
+                Op::Or => "|",
+                Op::And => "&"
+            }.to_owned(),
             Token::Def => "def".to_owned(),
             Token::Let => "let".to_owned(),
             Token::Lambda => "lambda".to_owned(),
@@ -179,7 +198,20 @@ pub fn get_tok(buf: &mut Buffer) -> Result<Token, Box<dyn Error>> {
         || buf.bytes[i] == b'&'
     {
         i += 1;
-        tok = Token::Op(String::from_utf8(buf.bytes[start..i].to_vec())?);
+
+        let s = String::from_utf8(buf.bytes[start..i].to_vec())?;
+        tok = Token::Op(match s.as_str() {
+            "+" => Op::Add,
+            "-" => Op::Sub,
+            "*" => Op::Mul,
+            "/" => Op::Div,
+            "=" => Op::Eq,
+            ">" => Op::Gt,
+            "<" => Op::Lt,
+            "|" => Op::Or,
+            "&" => Op::And,
+            _ => {error(buf, format!("Invalid operator: '{}'", s))?; Op::And}
+        });
     }
     else if buf.bytes[i].is_ascii_alphabetic() || buf.bytes[i] == b'_' {
         while i < buf.len {
