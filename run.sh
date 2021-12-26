@@ -1,1 +1,2 @@
-cargo run tests/test.sp
+cargo build
+target/debug/sputter --stack-size 64 tests/test.sp
