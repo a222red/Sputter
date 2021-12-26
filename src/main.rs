@@ -62,26 +62,36 @@ macro_rules! gen_builtin {
 /// Shorthand macro for spawning a thread
 macro_rules! spawn_thread {
     ($name:literal, $stack_size:expr, $f:expr) => {
-        Builder::new().name($name.to_owned()).stack_size($stack_size).spawn($f)?
+        Builder::new().name($name.to_owned()).stack_size($stack_size).spawn(move || $f)?
     };
 }
 
 /// Constant specifying the amount of stack space available to the execution thread
-const STACK_SIZE: usize = 32 * 1024 * 1024;
+const DEFAULT_STACK_SIZE: usize = 32 * 1024 * 1024;
 
 fn main() -> Result<(), Box<dyn Error>> {
-    let child = spawn_thread!("Sputter", STACK_SIZE, || {
-        let matches = App::new("Sputter")
-            .version(crate_version!())
-            .author(crate_authors!())
-            .about(crate_description!())
-            .arg(Arg::with_name("INPUT")
-                .help("Sets the input file to use")
-                .required(false)
-                .index(1)
-            )
-            .get_matches();
-        
+    let matches = App::new("Sputter")
+        .version(crate_version!())
+        .author(crate_authors!())
+        .about(crate_description!())
+        .arg(Arg::with_name("INPUT")
+            .help("Sets the input file to use")
+            .required(false)
+            .index(1)
+        )
+        .arg(Arg::with_name("STACK_SIZE")
+            .short("s")
+            .long("stack-size")
+            .value_name("SIZE")
+            .help("Specify stack space for the execution thread (in megabytes)")
+            .takes_value(true)
+        )
+        .get_matches();
+
+    let child = spawn_thread!("Sputter", match matches.value_of("STACK_SIZE") {
+        Some(s) => s.parse::<usize>().unwrap() * 1024 * 1024,
+        None => DEFAULT_STACK_SIZE
+    }, {
         let mut names = HashMap::<String, Object>::new();
         let mut call_stack = Vec::<CallInfo>::new();
         let mut scope_stack = Vec::<Vec<String>>::new();
@@ -97,9 +107,8 @@ fn main() -> Result<(), Box<dyn Error>> {
             (range start: Int end: Int)
         });
 
-        let input = matches.value_of("INPUT");
         // Run file specified by command line arg
-        if let Some(filename) = input {
+        if let Some(filename) = matches.value_of("INPUT") {
             let mut buf = Buffer::new(read(filename).unwrap()).unwrap();
 
             while buf.index < buf.len {
