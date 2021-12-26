@@ -86,6 +86,12 @@ fn main() -> Result<(), Box<dyn Error>> {
             .help("Specify stack space for the execution thread (in megabytes)")
             .takes_value(true)
         )
+        .arg(Arg::with_name("COLOR_OFF")
+            .short("o")
+            .long("color-off")
+            .help("Don't use color in REPL output")
+            .takes_value(false)
+        )
         .get_matches();
 
     let child = spawn_thread!("Sputter", match matches.value_of("STACK_SIZE") {
@@ -119,6 +125,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         // REPL
         else {
             let stdin = stdin();
+            let no_color = matches.is_present("COLOR_OFF");
             let mut buf = Buffer::new_empty();
 
             loop {
@@ -132,8 +139,9 @@ fn main() -> Result<(), Box<dyn Error>> {
                     let tok = get_tok(&mut buf).unwrap();
                     res = match_expr(&mut buf, &mut names, &mut call_stack, &mut scope_stack, tok).unwrap();
                 }
-
-                println!("\u{001b}[36m=> {:?}\u{001b}[0m", res);
+                
+                if !no_color {println!("\u{001b}[36m=> {:?}\u{001b}[0m", res);}
+                else {println!("=> {:?}", res)}
             }
         }
     });
