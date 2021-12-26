@@ -34,6 +34,15 @@ use std::{
     }
 };
 
+use clap::{
+    Arg,
+    App,
+    crate_version,
+    crate_authors,
+    crate_name,
+    crate_description
+};
+
 /// Define builtin functions with Sputter prototype syntax
 macro_rules! gen_builtin {
     ($names:ident { $(($name:ident $($params:ident: $types:ident)*))*}) => {
@@ -63,6 +72,17 @@ const STACK_SIZE: usize = 32 * 1024 * 1024;
 
 fn main() -> Result<(), Box<dyn Error>> {
     let child = spawn_thread!("Sputter", STACK_SIZE, || {
+        let matches = App::new(crate_name!())
+            .version(crate_version!())
+            .author(crate_authors!())
+            .about(crate_description!())
+            .arg(Arg::with_name("INPUT")
+                .help("Sets the input file to use")
+                .required(false)
+                .index(1)
+            )
+            .get_matches();
+        
         let mut names = HashMap::<String, Object>::new();
         let mut call_stack = Vec::<CallInfo>::new();
         let mut scope_stack = Vec::<Vec<String>>::new();
@@ -78,11 +98,10 @@ fn main() -> Result<(), Box<dyn Error>> {
             (range start: Int end: Int)
         });
 
-        // TODO: Use Clap for arg parsing
-        let mut args = std::env::args();
+        let input = matches.value_of("INPUT");
         // Run file specified by command line arg
-        if args.len() == 2 {
-            let mut buf = Buffer::new(read(args.nth(1).unwrap().as_str()).unwrap()).unwrap();
+        if let Some(filename) = input {
+            let mut buf = Buffer::new(read(filename).unwrap()).unwrap();
 
             while buf.index < buf.len {
                 let tok = get_tok(&mut buf).unwrap();
@@ -90,7 +109,7 @@ fn main() -> Result<(), Box<dyn Error>> {
             }
         }
         // REPL
-        else if args.len() == 1 {
+        else {
             let stdin = stdin();
             let mut buf = Buffer::new_empty();
 
