@@ -39,7 +39,6 @@ use clap::{
     App,
     crate_version,
     crate_authors,
-    crate_name,
     crate_description
 };
 
@@ -72,7 +71,7 @@ const STACK_SIZE: usize = 32 * 1024 * 1024;
 
 fn main() -> Result<(), Box<dyn Error>> {
     let child = spawn_thread!("Sputter", STACK_SIZE, || {
-        let matches = App::new(crate_name!())
+        let matches = App::new("Sputter")
             .version(crate_version!())
             .author(crate_authors!())
             .about(crate_description!())
